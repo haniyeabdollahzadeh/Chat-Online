@@ -1,0 +1,38 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Chat Room</title>
+</head>
+<body>
+<h2>Chat Room: {{ room_name }}</h2>
+
+<div id="chat-log" style="border:1px solid #ccc; height:200px; overflow:auto;"></div>
+
+<input id="chat-message-input" type="text" size="100">
+<button id="chat-message-submit">Send</button>
+
+<script>
+    const roomName = "{{ room_name }}";
+    const chatSocket = new WebSocket(
+        'ws://' + window.location.host + '/ws/chat/' + roomName + '/'
+    );
+
+    chatSocket.onmessage = function(e) {
+        const data = JSON.parse(e.data);
+        const log = document.getElementById('chat-log');
+        log.innerHTML += (data.message + '<br>');
+        log.scrollTop = log.scrollHeight;
+    };
+
+    chatSocket.onclose = function(e) {
+        console.error('Chat socket closed unexpectedly');
+    };
+
+    document.getElementById('chat-message-submit').onclick = function(e) {
+        const input = document.getElementById('chat-message-input');
+        chatSocket.send(JSON.stringify({'message': input.value}));
+        input.value = '';
+    };
+</script>
+</body>
+</html>
